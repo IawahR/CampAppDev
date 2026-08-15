@@ -563,10 +563,184 @@ var AUTH_USERS = {
   'admin': { password: 'iawah', role: 'admin' }
 };
 
+// Default role permissions (which tabs/modules each role can access)
+// Store in PropertiesService so admins can update dynamically
+var DEFAULT_ROLE_PERMISSIONS = {
+  'admin': {
+    'Activity Scheduler': true,
+    'Staffing and Volunteers': true,
+    'Main Camp': true,
+    'YDLP': true,
+    'Reports': true,
+    'More to Come': true,
+    'Settings': true
+  },
+  'scheduler': {
+    'Activity Scheduler': true,
+    'Staffing and Volunteers': false,
+    'Main Camp': false,
+    'YDLP': false,
+    'Reports': false,
+    'More to Come': false,
+    'Settings': false
+  }
+};
+
 function authenticateUser(username, password) {
   var user = AUTH_USERS[username.toLowerCase().trim()];
   if (user && user.password === password) {
-    return { success: true, role: user.role };
+    return { success: true, role: user.role, username: username.toLowerCase().trim() };
   }
   return { success: false, error: 'Invalid credentials. Please try again.' };
+}
+
+function getPermissions(role) {
+  if (!role) return {};
+  var props = PropertiesService.getUserProperties();
+  var savedPerms = props.getProperty('ROLE_PERMISSIONS_' + role);
+  if (savedPerms) {
+    return safeparse_(savedPerms);
+  }
+  return DEFAULT_ROLE_PERMISSIONS[role] || {};
+}
+
+function updateRolePermissions(adminUsername, adminPassword, targetRole, permissions) {
+  var admin = AUTH_USERS[adminUsername.toLowerCase().trim()];
+  if (!admin || admin.password !== adminPassword || admin.role !== 'admin') {
+    return { success: false, error: 'Unauthorized' };
+  }
+  var props = PropertiesService.getUserProperties();
+  props.setProperty('ROLE_PERMISSIONS_' + targetRole, JSON.stringify(permissions));
+  return { success: true, message: 'Permissions updated for role: ' + targetRole };
+}
+
+// ── Year/Season Management ────────────────────────────────────────────────────
+
+function setSelectedYear(year) {
+  var props = PropertiesService.getUserProperties();
+  props.setProperty('SELECTED_YEAR', String(year));
+  return { success: true, year: year };
+}
+
+function getSelectedYear() {
+  var props = PropertiesService.getUserProperties();
+  var year = props.getProperty('SELECTED_YEAR');
+  return year || '2026'; // Default to 2026 if not set
+}
+
+function getAvailableYears() {
+  // Returns list of years that have data
+  // For now, return a fixed range; can be extended to scan the sheet
+  return ['2024', '2025', '2026', '2027'];
+}
+
+// ── Registration Management ────────────────────────────────────────────────────
+
+// Store registrations in a special sheet tab
+var REG_TAB = 'Registrations';
+
+function ensureRegistrationTab_() {
+  try {
+    var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(REG_TAB);
+    return sheet;
+  } catch (e) {
+    // Tab doesn't exist, create it
+    var ss = SpreadsheetApp.openById(SHEET_ID);
+    var sheet = ss.insertSheet(REG_TAB);
+    // Add headers
+    sheet.getRange('A1:H1').setValues([['ID', 'Last Name', 'First Name', 'Program', 'Week', 'Cabin', 'Status', 'Notes']]);
+    return sheet;
+  }
+}
+
+function saveRegistration(registrationData) {
+  var sheet = ensureRegistrationTab_();
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  
+  try {
+    var id = registrationData.id || Utilities.getUuid();
+    var range = sheet.getDataRange();
+    var values = range.getValues();
+    
+    // Find existing row or create new
+    var rowIndex = -1;
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][0] === id) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+    
+    var row = [
+      id,
+      registrationData.lastName || '',
+      registrationData.firstName || '',
+      registrationData.program || '',
+      registrationData.week || '',
+      registrationData.cabin || '',
+      registrationData.status || 'Pending',
+      registrationData.notes || ''
+    ];
+    
+    if (rowIndex > 0) {
+      // Update existing
+      sheet.getRange(rowIndex + ':' + rowIndex).setValues([row]);
+    } else {
+      // Add new
+      sheet.appendRow(row);
+    }
+    
+    SpreadsheetApp.flush();
+    return { success: true, id: id };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function loadRegistrations() {
+  var sheet = ensureRegistrationTab_();
+  var values = sheet.getDataRange().getValues();
+  var registrations = [];
+  
+  // Skip header row
+  for (var i = 1; i < values.length; i++) {
+    var row = values[i];
+    if (row[0]) { // If ID exists
+      registrations.push({
+        id: row[0],
+        lastName: row[1],
+        firstName: row[2],
+        program: row[3],
+        week: row[4],
+        cabin: row[5],
+        status: row[6],
+        notes: row[7]
+      });
+    }
+  }
+  
+  return registrations;
+}
+
+function deleteRegistration(id) {
+  var sheet = ensureRegistrationTab_();
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  
+  try {
+    var values = sheet.getDataRange().getValues();
+    
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][0] === id) {
+        sheet.deleteRow(i + 1);
+        SpreadsheetApp.flush();
+        return { success: true };
+      }
+    }
+    
+    return { success: false, error: 'Registration not found' };
+  } finally {
+    lock.releaseLock();
+  }
 }

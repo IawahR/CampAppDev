@@ -190,6 +190,17 @@ tr:hover td{background:var(--ghost);}
 .md h3{font-size:.95rem;font-weight:800;color:var(--dgdk);margin-bottom:.9rem;}
 .mdf{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--lt);}
 
+/* ── TOAST NOTIFICATIONS ── */
+.toast{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;box-shadow:var(--shl);font-size:.78rem;font-weight:600;min-width:300px;animation:slideIn 0.3s ease-out;backdrop-filter:blur(10px);}
+.toast.success{background:linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);color:#166534;border-left:4px solid #22c55e;}
+.toast.error{background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);color:#991b1b;border-left:4px solid #ef4444;}
+.toast.info{background:linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);color:#1e40af;border-left:4px solid #3b82f6;}
+.toast-icon{font-size:1.2rem;flex-shrink:0;}
+.toast-close{margin-left:auto;cursor:pointer;opacity:0.7;transition:opacity 0.2s;padding:4px;font-size:1rem;line-height:1;}
+.toast-close:hover{opacity:1;}
+@keyframes slideIn{from{transform:translateX(400px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes slideOut{from{transform:translateX(0);opacity:1;}to{transform:translateX(400px);opacity:0;}}
+
 /* ── CABIN TOGGLES ── */
 .catg{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
 .ctog{padding:5px 11px;border-radius:20px;border:1.5px solid var(--lt);background:#fff;cursor:pointer;font-size:.7rem;font-weight:700;color:var(--mid);transition:all .16s;}
@@ -391,6 +402,9 @@ tr:hover td{background:var(--ghost);}
 </head>
 <body>
 
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div id="toastContainer" style="position:fixed; top:20px; right:20px; z-index:10000; display:flex; flex-direction:column; gap:10px; max-width:400px;"></div>
+
 <!-- WEEK SCREEN -->
 <div id="loadScr" style="position:fixed;inset:0;background:#1a5c3a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;">
   <div style="color:#99cc33;font-family:Montserrat,sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;">Loading…</div>
@@ -498,104 +512,30 @@ tr:hover td{background:var(--ghost);}
   </main>
 </div>
 
-<!-- REGISTRATION SCREEN -->
-<div id="registrationScreen" style="display:none; flex-direction:column; min-height:100vh; background:var(--bg);">
-  <header>
-    <div class="fx">
-      <img class="hdr-logo" onclick="goHome()" src="PASTE_YOUR_BASE64_LOGO_STRING_HERE" alt="IAWAH">
-      <span class="hdr-title">Registration & Cabinizing</span>
+<!-- SETTINGS SCREEN -->
+<div id="settingsScreen" style="display:none; flex-direction:column; min-height:100vh; background:var(--bg);">
+  <header style="background: var(--dgdk); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shl);\">
+    <div style=\"display: flex; align-items: center;\">
+      <span class="hdr-title" style=\"color: #aaddbb; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 2px; margin-left: 10px;\">Settings</span>
     </div>
-    <div class="hdr-r">
-      <select id="globalYearSelect" class="year-sel" onchange="changeGlobalYear()">
-        <option value="2026">2026 Season</option>
-        <option value="2025">2025 Season</option>
-      </select>
-      <span class="wpill" onclick="goHome()">Home</span>
+    <div class=\"hdr-r\" style=\"display: flex; align-items: center; gap: 9px;\">
+      <button class=\"btn bgh\" onclick=\"goHome()\" style=\"padding: 6px 13px; font-size: 0.7rem;\">Back to Dashboard</button>
     </div>
   </header>
-  
-  <main style="max-width:1320px; margin:0 auto; padding:2rem; width:100%; flex:1;">
-    <div class="fb mb-md">
-      <div>
-        <div class="st">Camper Registration</div>
-        <div class="ss">Manage enrollments, assign cabins, and review medical/dietary flags.</div>
-      </div>
-      <button class="btn bp" onclick="openRegModal()">+ New Registration</button>
+
+  <main style=\"flex: 1; padding: 2rem; max-width: 1320px; margin: 0 auto; width: 100%;\">
+    <div style=\"margin-bottom: 2rem;\">
+      <div class=\"st\">Role & Permissions</div>
+      <div class=\"ss\">Manage which features each role can access</div>
     </div>
 
-    <!-- MAIN CAMP SECTION -->
-    <h2 style="font-size:1.1rem; font-weight:800; color:var(--dgdk); margin-bottom:1rem; border-bottom:2px solid var(--lt); padding-bottom:5px;">Main Camp</h2>
-    <div class="card mb-md">
-      <div class="strip-row mb-sm">
-        <span class="hint-lbl">Filter:</span>
-        <div class="chip cab-on">All</div>
-        <div class="chip">Jumpstart</div>
-        <div class="chip">Junior Camp</div>
-        <div class="chip">Senior Camp</div>
-        <div class="chip">Rise</div>
+    <div class=\"card\">
+      <h2>Role Access Control</h2>
+      <p style=\"font-size: 0.75rem; color: var(--mid); margin-bottom: 1rem;\">Admin users can grant or revoke access to modules for each role. This feature is coming soon.</p>
+      <div id=\"rolesContainer\" style=\"color: var(--mid); font-size: 0.75rem; padding: 1rem; background: var(--ghost); border-radius: var(--r);\">
+        <p>Settings and role management will be added in a future update.</p>
       </div>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Camper</th>
-              <th>Program</th>
-              <th>Session / Week</th>
-              <th>Status</th>
-              <th>Cabin</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="regMainCampTbody">
-            <!-- Mock Data Example -->
-            <tr>
-              <td><strong style="color:var(--dgdk);">Smith, Alex</strong></td>
-              <td><span class="pill" style="background:var(--cjrb); border:1px solid #93c5fd;">Junior Camp</span></td>
-              <td>Week 2</td>
-              <td><span class="pill" style="background:#dcfce7; color:#166534;">Registered</span></td>
-              <td><span style="color:#aaa; font-style:italic;">Unassigned</span></td>
-              <td><button class="btn bbg bsm" onclick="openCabinizeModal('C123')">Cabinize</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- YDLP SECTION -->
-    <h2 style="font-size:1.1rem; font-weight:800; color:var(--dgdk); margin-bottom:1rem; border-bottom:2px solid var(--lt); padding-bottom:5px; margin-top:2rem;">YDLP (Youth Development)</h2>
-    <div class="card">
-      <div class="strip-row mb-sm">
-        <span class="hint-lbl">Filter:</span>
-        <div class="chip cab-on">All</div>
-        <div class="chip">CREW</div>
-        <div class="chip">ROOTs</div>
-        <div class="chip">Reach</div>
-      </div>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Applicant</th>
-              <th>Program</th>
-              <th>Session / Week</th>
-              <th>Status</th>
-              <th>Placement</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="regYdlpTbody">
-             <!-- Mock Data Example -->
-             <tr>
-              <td><strong style="color:var(--dgdk);">Doe, Taylor</strong></td>
-              <td><span class="pill" style="background:#e0e7ff; border:1px solid #a5b4fc;">CREW</span></td>
-              <td>Week 1-3</td>
-              <td><span class="pill" style="background:#fef08a; color:#854d0e;">Pending Review</span></td>
-              <td><span style="color:#aaa; font-style:italic;">Unassigned</span></td>
-              <td><button class="btn bgh bsm">Review App</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <button class=\"btn bp\" onclick=\"alert('Settings coming soon!')\" style=\"margin-top: 1.5rem;\">Save Changes</button>
     </div>
   </main>
 </div>
@@ -833,6 +773,34 @@ tr:hover td{background:var(--ghost);}
   </div>
 </div>
 
+<!-- REGISTRATION MODAL -->
+<div class="mo" id="regMo">
+  <div class="md"><h3>New Registration</h3>
+    <div class="fr"><div class="ff"><label>First Name</label><input type="text" id="regFi"></div><div class="ff"><label>Last Name</label><input type="text" id="regLa"></div></div>
+    <div class="fr"><div class="ff"><label>Program</label>
+      <select id="regProg">
+        <option value="Main Camp">Main Camp</option>
+        <option value="YDLP">YDLP</option>
+        <option value="Junior Camp">Junior Camp</option>
+        <option value="Jump Start">Jump Start</option>
+      </select>
+    </div>
+    <div class="ff"><label>Week(s)</label><input type="text" id="regWeek" placeholder="e.g., Week 1, 1-3"></div></div>
+    <div class="fr"><div class="ff"><label>Cabin (optional)</label><input type="text" id="regCab"></div>
+      <div class="ff"><label>Status</label>
+        <select id="regStat">
+          <option value="Pending">Pending</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+    </div>
+    <div class="ff"><label>Notes (optional)</label><textarea id="regNotes" style="min-height:60px;"></textarea></div>
+    <input type="hidden" id="regId">
+    <div class="mdf"><button class="btn bgh" onclick="closeMo('regMo')">Cancel</button><button class="btn bp" onclick="saveRegistration_()">Save Registration</button></div>
+  </div>
+</div>
+
 <div class="mo" id="importMo">
   <div class="md"><h3 id="importMoTit">Import Preview</h3>
     <div id="importPreview"></div>
@@ -883,6 +851,9 @@ const GRP_CSS= {'Jr. Boys':'gc-jrb','Jr. Girls':'gc-jrg','Junior Camp':'gc-jrc',
 //  STATE
 // ════════════════════════════════════════════
 
+// Global user state
+let _currentUser = { username: '', role: '', permissions: {} };
+
 function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
@@ -900,8 +871,19 @@ function doLogin() {
       btn.textContent = 'Login';
       btn.disabled = false;
       if (res.success) {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('hubScreen').style.display = 'flex';
+        _currentUser = { username: res.username, role: res.role, permissions: {} };
+        // Fetch user permissions after successful login
+        google.script.run
+          .withSuccessHandler(function(perms) {
+            _currentUser.permissions = perms;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('hubScreen').style.display = 'flex';
+            updateDashboard();
+          })
+          .withFailureHandler(function() {
+            err.textContent = 'Error loading permissions.';
+          })
+          .getPermissions(res.role);
       } else {
         err.textContent = res.error;
       }
@@ -914,7 +896,207 @@ function doLogin() {
     .authenticateUser(u, p);
 }
 
+function doLogout() {
+  _currentUser = { username: '', role: '', permissions: {} };
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('hubScreen').style.display = 'none';
+  document.getElementById('settingsScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('weekScreen').style.display = 'none';
+  document.getElementById('registrationScreen').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loadScr').style.display = 'none';
+}
+
+function updateDashboard() {
+  // Update user pill if it exists
+  const userPill = document.getElementById('userPill');
+  if (userPill) {
+    userPill.textContent = _currentUser.username.toUpperCase();
+  }
+  
+  // With existing card-based structure, just update visibility
+  // For now, show all cards as the current structure supports Activity Scheduler and Registration
+  const btnScheduler = document.getElementById('btnScheduler');
+  const btnRegistration = document.getElementById('btnRegistration');
+  
+  if (btnScheduler && !_currentUser.permissions['Activity Scheduler']) {
+    btnScheduler.style.display = 'none';
+  }
+  
+  if (btnRegistration && !_currentUser.permissions['Main Camp']) {
+    btnRegistration.style.display = 'none';
+  }
+}
+
+function showComingSoon(moduleName) {
+  alert(moduleName + ' is coming soon!');
+}
+
+function showSettings() {
+  if (_currentUser.role !== 'admin') {
+    alert('Settings are only available to admin users.');
+    return;
+  }
+  document.getElementById('hubScreen').style.display = 'none';
+  document.getElementById('settingsScreen').style.display = 'flex';
+  loadRolePermissionsUI();
+}
+
+function loadRolePermissionsUI() {
+  // This will be populated by the Settings page
+  const container = document.getElementById('rolesContainer');
+  if (!container) return;
+  
+  container.innerHTML = '<p style="color: var(--mid); font-size: 0.75rem;">Loading role settings...</p>';
+  // Future: Load and display roles with their permissions
+}
+
+// ════════════════════════════════════════════
+//  YEAR PERSISTENCE
+// ════════════════════════════════════════════
+
+let _currentYear = '2026'; // Default year
+
+function initializeYear() {
+  // Load selected year from backend on startup
+  google.script.run
+    .withSuccessHandler(function(year) {
+      _currentYear = year;
+      updateYearUI();
+    })
+    .withFailureHandler(function() {
+      _currentYear = '2026';
+      updateYearUI();
+    })
+    .getSelectedYear();
+}
+
+function changeYear(year) {
+  _currentYear = year;
+  
+  // Persist to backend
+  google.script.run
+    .withSuccessHandler(function(res) {
+      console.log('Year saved:', year);
+      // Reload schedule and other year-dependent data
+      if (CW) {
+        flushSave();
+      }
+    })
+    .withFailureHandler(function(err) {
+      console.error('Year save failed:', err);
+      showValidationError('Failed to save year selection');
+    })
+    .setSelectedYear(year);
+}
+
+function updateYearUI() {
+  const yearSelects = document.querySelectorAll('.year-sel');
+  yearSelects.forEach(sel => {
+    sel.value = _currentYear;
+  });
+}
+
+// ════════════════════════════════════════════
+//  INPUT VALIDATION FRAMEWORK
+// ════════════════════════════════════════════
+
+const VALIDATION_RULES = {
+  firstName: { required: true, minLength: 1, maxLength: 50, pattern: /^[a-zA-Z\s'-]+$/, message: 'First name: letters, spaces, hyphens, apostrophes only' },
+  lastName: { required: true, minLength: 1, maxLength: 50, pattern: /^[a-zA-Z\s'-]+$/, message: 'Last name: letters, spaces, hyphens, apostrophes only' },
+  cabin: { required: false, maxLength: 20 },
+  activityName: { required: true, minLength: 2, maxLength: 100, message: 'Activity name required (2-100 chars)' },
+  areaName: { required: true, minLength: 2, maxLength: 100, message: 'Area name required (2-100 chars)' },
+  email: { required: false, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email format' },
+  phone: { required: false, pattern: /^[\d\-\+\(\)\s]*$/, message: 'Phone: digits, hyphens, spaces, parentheses only' }
+};
+
+function validateInput(fieldName, value) {
+  const rule = VALIDATION_RULES[fieldName];
+  if (!rule) return { valid: true }; // No rule defined, pass through
+  
+  if (rule.required && (!value || value.trim() === '')) {
+    return { valid: false, error: `${fieldName} is required` };
+  }
+  
+  if (value && rule.minLength && value.length < rule.minLength) {
+    return { valid: false, error: `${fieldName} must be at least ${rule.minLength} characters` };
+  }
+  
+  if (value && rule.maxLength && value.length > rule.maxLength) {
+    return { valid: false, error: `${fieldName} must be at most ${rule.maxLength} characters` };
+  }
+  
+  if (value && rule.pattern && !rule.pattern.test(value)) {
+    return { valid: false, error: rule.message || `${fieldName} format is invalid` };
+  }
+  
+  return { valid: true };
+}
+
+function validateForm(formData) {
+  const errors = [];
+  
+  Object.keys(formData).forEach(fieldName => {
+    const value = formData[fieldName];
+    const result = validateInput(fieldName, value);
+    if (!result.valid) {
+      errors.push(result.error);
+    }
+  });
+  
+  return {
+    valid: errors.length === 0,
+    errors: errors
+  };
+}
+
+function showToast(message, type = 'info', duration = 5000) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icon = {
+    success: '✓',
+    error: '✕',
+    info: 'ℹ'
+  }[type] || 'ℹ';
+  
+  const text = Array.isArray(message) ? message.join(' • ') : message;
+  
+  toast.innerHTML = `
+    <span class="toast-icon">${icon}</span>
+    <span>${text}</span>
+    <span class="toast-close" onclick="this.parentElement.remove()">×</span>
+  `;
+  
+  container.appendChild(toast);
+  
+  if (duration > 0) {
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s ease-out';
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+}
+
+function showValidationError(message) {
+  showToast(message, 'error', 5000);
+}
+
+function showValidationSuccess(message) {
+  showToast(message, 'success', 3000);
+}
+
 function showWeekSelector() {
+  if (!_currentUser.permissions['Activity Scheduler']) {
+    alert('You do not have access to Activity Scheduler');
+    return;
+  }
   document.getElementById('hubScreen').style.display = 'none';
   document.getElementById('weekScreen').style.display = 'flex';
   // Re-build counts in case they changed while on the dashboard
@@ -924,7 +1106,138 @@ function showWeekSelector() {
 function openRegistration() {
   document.getElementById('hubScreen').style.display = 'none';
   document.getElementById('registrationScreen').style.display = 'flex';
-  // Future: Trigger a google.script.run call here to fetch registration data
+  loadRegistrationData();
+}
+
+// ════════════════════════════════════════════
+//  REGISTRATION MANAGEMENT
+// ════════════════════════════════════════════
+
+let _registrations = [];
+
+function loadRegistrationData() {
+  google.script.run
+    .withSuccessHandler(function(regs) {
+      _registrations = regs || [];
+      renderRegistrationsTable();
+    })
+    .withFailureHandler(function(err) {
+      console.error('Failed to load registrations:', err);
+      showValidationError('Failed to load registrations');
+    })
+    .loadRegistrations();
+}
+
+function renderRegistrationsTable() {
+  const tbody = document.getElementById('regTbody');
+  if (!tbody) return;
+  
+  if (_registrations.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--mid); padding:2rem;">No registrations yet.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = _registrations.map(reg => `
+    <tr>
+      <td>${reg.lastName}</td>
+      <td>${reg.firstName}</td>
+      <td>${reg.program}</td>
+      <td>${reg.week}</td>
+      <td>${reg.cabin || '—'}</td>
+      <td><span class="chip ${reg.status === 'Confirmed' ? 'cab-on' : reg.status === 'Completed' ? 'cab-done' : 'cab-pending'}">${reg.status}</span></td>
+      <td>
+        <button class="btn bbg bsm" onclick="editRegistration('${reg.id}')">Edit</button>
+        <button class="btn bd bsm" onclick="deleteReg_('${reg.id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openRegModal() {
+  // Clear form for new registration
+  document.getElementById('regId').value = '';
+  document.getElementById('regFi').value = '';
+  document.getElementById('regLa').value = '';
+  document.getElementById('regProg').value = 'Main Camp';
+  document.getElementById('regWeek').value = '';
+  document.getElementById('regCab').value = '';
+  document.getElementById('regStat').value = 'Pending';
+  document.getElementById('regNotes').value = '';
+  
+  document.querySelector('#regMo h3').textContent = 'New Registration';
+  openMo('regMo');
+}
+
+function editRegistration(regId) {
+  const reg = _registrations.find(r => r.id === regId);
+  if (!reg) return;
+  
+  document.getElementById('regId').value = reg.id;
+  document.getElementById('regFi').value = reg.firstName;
+  document.getElementById('regLa').value = reg.lastName;
+  document.getElementById('regProg').value = reg.program;
+  document.getElementById('regWeek').value = reg.week;
+  document.getElementById('regCab').value = reg.cabin;
+  document.getElementById('regStat').value = reg.status;
+  document.getElementById('regNotes').value = reg.notes;
+  
+  document.querySelector('#regMo h3').textContent = 'Edit Registration';
+  openMo('regMo');
+}
+
+function saveRegistration_() {
+  const regData = {
+    id: document.getElementById('regId').value,
+    firstName: document.getElementById('regFi').value.trim(),
+    lastName: document.getElementById('regLa').value.trim(),
+    program: document.getElementById('regProg').value,
+    week: document.getElementById('regWeek').value.trim(),
+    cabin: document.getElementById('regCab').value.trim(),
+    status: document.getElementById('regStat').value,
+    notes: document.getElementById('regNotes').value.trim()
+  };
+  
+  // Validate
+  const validation = validateForm({
+    firstName: regData.firstName,
+    lastName: regData.lastName
+  });
+  
+  if (!validation.valid) {
+    showValidationError(validation.errors);
+    return;
+  }
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res.success) {
+        loadRegistrationData();
+        closeMo('regMo');
+        showValidationSuccess('Registration saved successfully');
+      }
+    })
+    .withFailureHandler(function(err) {
+      console.error('Save failed:', err);
+      showValidationError('Failed to save registration');
+    })
+    .saveRegistration(regData);
+}
+
+function deleteReg_(regId) {
+  if (!confirm('Delete this registration? This cannot be undone.')) return;
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res.success) {
+        loadRegistrationData();
+        showValidationSuccess('Registration deleted');
+      }
+    })
+    .withFailureHandler(function(err) {
+      console.error('Delete failed:', err);
+      showValidationError('Failed to delete registration');
+    })
+    .deleteRegistration(regId);
 }
 
 // Update your existing goHome function to include hiding the new screen
@@ -935,7 +1248,8 @@ function goHome() {
   
   document.getElementById('appShell').style.display = 'none';
   document.getElementById('weekScreen').style.display = 'none';
-  document.getElementById('registrationScreen').style.display = 'none'; // Added this line
+  document.getElementById('registrationScreen').style.display = 'none';
+  document.getElementById('settingsScreen').style.display = 'none';
   
   document.getElementById('hubScreen').style.display = 'flex';
 }
@@ -1796,8 +2110,24 @@ function openCamperMod(id){
   openMo('camperMo');
 }
 function saveCamper(){
-  const d=wk();const first=document.getElementById('cFi').value.trim();const last=document.getElementById('cLa').value.trim();const cabin=document.getElementById('cCa').value.trim();const ctype=document.getElementById('cTyp').value;const focus=document.getElementById('cFo').value;
-  if(!first||!last){alert('Name required.');return;}
+  const d=wk();
+  const first=document.getElementById('cFi').value.trim();
+  const last=document.getElementById('cLa').value.trim();
+  const cabin=document.getElementById('cCa').value.trim();
+  const ctype=document.getElementById('cTyp').value;
+  const focus=document.getElementById('cFo').value;
+  
+  // Validate input
+  const validation = validateForm({
+    firstName: first,
+    lastName: last
+  });
+  
+  if (!validation.valid) {
+    showValidationError(validation.errors);
+    return;
+  }
+  
   const eid=document.getElementById('cEid').value;
   if(eid){Object.assign(d.campers.find(x=>x.id==eid),{first,last,cabin,ctype,focus});}
   else{d.campers.push({id:uid(),first,last,cabin,ctype,focus});}
@@ -1923,9 +2253,45 @@ function importFile(e,hint){
   else{const r=new FileReader();r.onload=ev=>parseExcelImport(ev.target.result);r.readAsArrayBuffer(file);}
 }
 
+// RFC 4180 compliant CSV parser that handles quoted fields with embedded commas
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let insideQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = i + 1 < line.length ? line[i + 1] : '';
+    
+    if (char === '"') {
+      if (insideQuotes && nextChar === '"') {
+        // Escaped quote: "" becomes "
+        current += '"';
+        i++; // Skip next quote
+      } else {
+        // Toggle quote state
+        insideQuotes = !insideQuotes;
+      }
+    } else if (char === ',' && !insideQuotes) {
+      // Field separator (only outside quotes)
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  // Add final field
+  result.push(current.trim());
+  return result;
+}
+
 function parseCSVImport(text){
-  const lines=text.split('\n').filter(l=>l.trim());if(!lines.length)return;
-  const h=lines[0].split(',').map(x=>x.trim().toLowerCase().replace(/"/g,''));
+  const lines=text.split('\n').filter(l=>l.trim());
+  if(!lines.length)return;
+  
+  const headerLine = parseCSVLine(lines[0]);
+  const h = headerLine.map(x => x.toLowerCase().replace(/^"|"$/g, ''));
   const fi=h.findIndex(x=>x.includes('first'));
   const li=h.findIndex(x=>x.includes('last'));
   const ci=h.findIndex(x=>x.includes('cabin'));
@@ -1934,17 +2300,26 @@ function parseCSVImport(text){
   const ki=h.findIndex(x=>x.includes('camp')||x.includes('group')||x.includes('session'));
   const srC=[],jrC=[];
   const seen=new Set();
+  
   for(let i=1;i<lines.length;i++){
-    const cols=lines[i].split(',').map(x=>x.trim().replace(/"/g,''));
-    const first=fi>=0?cols[fi]:cols[0];const last=li>=0?cols[li]:cols[1];
+    const cols = parseCSVLine(lines[i]);
+    const first=fi>=0?cols[fi]:cols[0];
+    const last=li>=0?cols[li]:cols[1];
     const cabin=ci>=0?cols[ci]:cols[2];
+    
     if(!first||!last)continue;
-    const key=`${last}|${first}|${cabin}`;if(seen.has(key))continue;seen.add(key);
-    const campRaw=ki>=0?cols[ki]:'';const genderRaw=gi>=0?cols[gi]:'';
+    const key=`${last}|${first}|${cabin}`;
+    if(seen.has(key))continue;
+    seen.add(key);
+    
+    const campRaw=ki>=0?cols[ki]:'';
+    const genderRaw=gi>=0?cols[gi]:'';
     const {ctype,camp}=mapCamp(campRaw,genderRaw);
     const focus=pi>=0?cols[pi]:'';
+    
     let matchedFocus='';
     if(focus){const m=G.activities.find(a=>a.name.toLowerCase()===focus.toLowerCase());if(m)matchedFocus=m.name;}
+    
     if(ctype==='sr'||ctype==='rise'){srC.push({first,last,cabin:cabin||'',ctype,focus:matchedFocus});}
     else{jrC.push({first,last,cabin:cabin||'',camp});}
   }
@@ -2562,6 +2937,7 @@ function tvCard(name,enrolled,max){
 // ════════════════════════════════════════════
 function init(){
   loadAll(function(){
+    initializeYear(); // Load saved year preference
     document.getElementById('loadScr').style.display='none';
     buildWkScreen();
     // Route user to the login screen instead of the week selector
