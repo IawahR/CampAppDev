@@ -854,7 +854,16 @@ const GRP_CSS= {'Jr. Boys':'gc-jrb','Jr. Girls':'gc-jrg','Junior Camp':'gc-jrc',
 // Global user state
 let _currentUser = { username: '', role: '', permissions: {} };
 
+function hasGoogleScriptRuntime() {
+  return typeof google !== 'undefined' && google && google.script && google.script.run;
+}
+
 function doLogin() {
+  if (!hasGoogleScriptRuntime()) {
+    const err = document.getElementById('loginErr');
+    if (err) err.textContent = 'This app must be opened from the deployed Google Apps Script web app.';
+    return;
+  }
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
   const btn = document.getElementById('loginBtn');
@@ -1254,11 +1263,6 @@ function goHome() {
   document.getElementById('hubScreen').style.display = 'flex';
 }
 
-// Placeholder for the Add Registration modal
-function openRegModal() {
-  alert("New Registration modal coming soon!");
-}
-
 let G  = {activities:[],areas:[],nextId:1};
 let WD = {};
 let S  = {year:'',weekDates:{}};
@@ -1448,6 +1452,13 @@ function normalizeState(){
 }
 
 function loadAll(callback){
+  if (!hasGoogleScriptRuntime()) {
+    const loadErr = document.getElementById('loadErr');
+    if (loadErr) {
+      loadErr.textContent = 'This app must be opened from the deployed Google Apps Script web app. Local file mode is not supported.';
+    }
+    return;
+  }
   // Only loads G and S on startup — fast, regardless of how many weeks exist.
   // Individual weeks are loaded on demand when the user selects them.
   google.script.run
@@ -2936,6 +2947,13 @@ function tvCard(name,enrolled,max){
 //  INIT
 // ════════════════════════════════════════════
 function init(){
+  if (!hasGoogleScriptRuntime()) {
+    const loadErr = document.getElementById('loadErr');
+    if (loadErr) {
+      loadErr.textContent = 'This app must be opened from the deployed Google Apps Script web app. The Google runtime is not available in local file mode.';
+    }
+    return;
+  }
   loadAll(function(){
     initializeYear(); // Load saved year preference
     document.getElementById('loadScr').style.display='none';
@@ -2944,7 +2962,14 @@ function init(){
     document.getElementById('loginScreen').style.display='flex';
   });
 }
-init();
+if (hasGoogleScriptRuntime()) {
+  init();
+} else {
+  const loadErr = document.getElementById('loadErr');
+  if (loadErr) {
+    loadErr.textContent = 'This app must be opened from the deployed Google Apps Script web app. Local file mode is not supported.';
+  }
+}
 </script>
 </body>
 </html>
